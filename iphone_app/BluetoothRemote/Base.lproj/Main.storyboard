@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="22155" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22131"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="BluetoothRemote" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hDq-3k-MZE" userLabel="ForwardButton">
+                                <rect key="frame" x="0.0" y="0.0" width="393" height="281"/>
+                                <color key="backgroundColor" systemColor="systemGreenColor"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Forward">
+                                    <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </buttonConfiguration>
+                                <connections>
+                                    <action selector="forwardPressed:" destination="BYZ-38-t0r" eventType="touchDown" id="ZfI-bR-hkw"/>
+                                    <action selector="forwardStopped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="p7e-Ok-0KQ"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cAU-54-pxb" userLabel="BackButton">
+                                <rect key="frame" x="0.0" y="571" width="393" height="281"/>
+                                <color key="backgroundColor" systemColor="systemRedColor"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Back">
+                                    <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </buttonConfiguration>
+                                <connections>
+                                    <action selector="backStopped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="g5Z-zU-SsN"/>
+                                    <action selector="goBack:" destination="BYZ-38-t0r" eventType="touchDown" id="Vhe-0i-1Wt"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="UBC-nk-xqN" userLabel="LeftButton">
+                                <rect key="frame" x="0.0" y="281" width="196.66666666666666" height="290"/>
+                                <color key="backgroundColor" systemColor="systemYellowColor"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Left">
+                                    <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </buttonConfiguration>
+                                <connections>
+                                    <action selector="goLeft:" destination="BYZ-38-t0r" eventType="touchDown" id="Jr7-Xh-4CB"/>
+                                    <action selector="leftStopped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="vNy-Uc-fkg"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oq3-PZ-WZL" userLabel="RightButton">
+                                <rect key="frame" x="196.66666666666663" y="281" width="196.33333333333337" height="290"/>
+                                <color key="backgroundColor" systemColor="systemBlueColor"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Right">
+                                    <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </buttonConfiguration>
+                                <connections>
+                                    <action selector="goRight:" destination="BYZ-38-t0r" eventType="touchDown" id="jId-Da-dgj"/>
+                                    <action selector="rightStopped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="jn7-jd-EDI"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Searching for robot..." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EUR-US-unA" userLabel="StatusLabel">
+                                <rect key="frame" x="20" y="404.66666666666669" width="353" height="43"/>
+                                <color key="backgroundColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="43" id="79I-P8-1sW"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="hDq-3k-MZE" firstAttribute="height" secondItem="8bC-Xf-vdC" secondAttribute="height" multiplier="0.33" id="43u-Wo-M6x"/>
+                            <constraint firstItem="UBC-nk-xqN" firstAttribute="top" secondItem="hDq-3k-MZE" secondAttribute="bottom" id="FII-Ks-Jck"/>
+                            <constraint firstItem="UBC-nk-xqN" firstAttribute="width" secondItem="8bC-Xf-vdC" secondAttribute="width" multiplier="0.5" id="J67-65-WpP"/>
+                            <constraint firstItem="UBC-nk-xqN" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="Mm4-QQ-aay"/>
+                            <constraint firstItem="oq3-PZ-WZL" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="Szw-Iu-716"/>
+                            <constraint firstItem="hDq-3k-MZE" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailing" id="U82-6I-jaj"/>
+                            <constraint firstItem="oq3-PZ-WZL" firstAttribute="leading" secondItem="UBC-nk-xqN" secondAttribute="trailing" id="Wut-aU-yd8"/>
+                            <constraint firstItem="cAU-54-pxb" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailing" id="XyA-hU-Z6B"/>
+                            <constraint firstItem="cAU-54-pxb" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="YbY-nG-SXQ"/>
+                            <constraint firstItem="oq3-PZ-WZL" firstAttribute="top" secondItem="hDq-3k-MZE" secondAttribute="bottom" id="aea-ZK-GaU"/>
+                            <constraint firstItem="EUR-US-unA" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="bCH-wT-VID"/>
+                            <constraint firstAttribute="bottom" secondItem="cAU-54-pxb" secondAttribute="bottom" id="gZ7-mZ-RLr"/>
+                            <constraint firstItem="hDq-3k-MZE" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="ixf-G7-2Ec"/>
+                            <constraint firstItem="EUR-US-unA" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="k1W-oR-8TM"/>
+                            <constraint firstItem="EUR-US-unA" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" constant="-20" id="oqc-xO-6UM"/>
+                            <constraint firstItem="cAU-54-pxb" firstAttribute="height" secondItem="8bC-Xf-vdC" secondAttribute="height" multiplier="0.33" id="owk-Jz-u1k"/>
+                            <constraint firstItem="cAU-54-pxb" firstAttribute="top" secondItem="oq3-PZ-WZL" secondAttribute="bottom" id="p07-sZ-iLf"/>
+                            <constraint firstItem="hDq-3k-MZE" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="pCm-MM-Pup"/>
+                            <constraint firstItem="cAU-54-pxb" firstAttribute="top" secondItem="UBC-nk-xqN" secondAttribute="bottom" id="pK1-Zk-ydx"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="backButton" destination="cAU-54-pxb" id="5P2-mN-r9R"/>
+                        <outlet property="forwardButton" destination="hDq-3k-MZE" id="IlJ-Ru-Qvs"/>
+                        <outlet property="leftButton" destination="UBC-nk-xqN" id="Hc8-P7-BOS"/>
+                        <outlet property="rightButton" destination="oq3-PZ-WZL" id="UQS-2e-U44"/>
+                        <outlet property="statusLabel" destination="EUR-US-unA" id="HBu-RY-IpC"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="138.1679389312977" y="-2.1126760563380285"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemBlueColor">
+            <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemGreenColor">
+            <color red="0.20392156862745098" green="0.7803921568627451" blue="0.34901960784313724" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemRedColor">
+            <color red="1" green="0.23137254901960785" blue="0.18823529411764706" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemYellowColor">
+            <color red="1" green="0.80000000000000004" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>
