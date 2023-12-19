@@ -1,161 +1,113 @@
-import network
-import socket
+# This example demonstrates a UART periperhal.
+
+import bluetooth
+import random
+import struct
 import time
+from ble_advertising import advertising_payload
+
+from micropython import const
+
+_IRQ_CENTRAL_CONNECT = const(1)
+_IRQ_CENTRAL_DISCONNECT = const(2)
+_IRQ_GATTS_WRITE = const(3)
+
+_FLAG_READ = const(0x0002)
+_FLAG_WRITE_NO_RESPONSE = const(0x0004)
+_FLAG_WRITE = const(0x0008)
+_FLAG_NOTIFY = const(0x0010)
+
+_UART_UUID = bluetooth.UUID("6E500001-B5A3-F393-E0A9-E50E24DCCA9E")
+_UART_TX = (
+    bluetooth.UUID("6E500004-B5A3-F393-E0A9-E50E24DCCA9E"),
+    _FLAG_READ | _FLAG_NOTIFY,
+)
+_UART_RX_LR = (
+    bluetooth.UUID("6E500002-B5A3-F393-E0A9-E50E24DCCA9E"),
+    _FLAG_WRITE | _FLAG_WRITE_NO_RESPONSE,
+)
+_UART_RX_FB = (
+    bluetooth.UUID("6E500003-B5A3-F393-E0A9-E50E24DCCA9E"),
+    _FLAG_WRITE | _FLAG_WRITE_NO_RESPONSE,
+)
+_UART_SERVICE = (
+    _UART_UUID,
+    (_UART_TX, _UART_RX_LR, _UART_RX_FB),
+)
 
 
+class BLESimplePeripheral:
+    def __init__(self, ble, name="mpy-uart"):
+        self._ble = ble
+        self._ble.active(True)
+        self._ble.irq(self._irq)
+        ((self._handle_tx, self._handle_rx_lr, self._handle_rx_fb),) = self._ble.gatts_register_services((_UART_SERVICE,))
+        self._connections = set()
+        self._write_callback = None
+        self._payload = advertising_payload(name=name, services=[_UART_UUID])
+        self._advertise()
 
-from machine import Pin, PWM
+    def _irq(self, event, data):
+        # Track connections so we can send notifications.
+        if event == _IRQ_CENTRAL_CONNECT:
+            conn_handle, _, _ = data
+            print("New connection", conn_handle)
+            self._connections.add(conn_handle)
+        elif event == _IRQ_CENTRAL_DISCONNECT:
+            conn_handle, _, _ = data
+            print("Disconnected", conn_handle)
+            self._connections.remove(conn_handle)
+            # Start advertising again to allow a new connection.
+            self._advertise()
+        elif event == _IRQ_GATTS_WRITE:
+            conn_handle, value_handle = data
+            #print(data)
+            #print(data, self._handle_rx, self._handle_rx2, self._handle_tx)
+            value = self._ble.gatts_read(value_handle)
+            #print(value, value_handle, self._handle_rx2)
+            #if value_handle == self._handle_rx2:
+            #    print("rx2")
+            #print(self._write_callback)
+            if value_handle == self._handle_rx_lr and self._write_callback:
+                self._write_callback(value, "LR")
+            elif value_handle == self._handle_rx_fb and self._write_callback:
+                self._write_callback(value, "FB")
 
-right_motor_2 = Pin(15, Pin.OUT) 
-right_motor_1 = Pin(14, Pin.OUT) 
-left_motor_2 = Pin(11, Pin.OUT) 
-left_motor_1 = Pin(12, Pin.OUT)
+    def send(self, data):
+        for conn_handle in self._connections:
+            self._ble.gatts_notify(conn_handle, self._handle_tx, data)
 
-led = machine.Pin("LED", machine.Pin.OUT)
+    def is_connected(self):
+        return len(self._connections) > 0
 
+    def _advertise(self, interval_us=500000):
+        print("Starting advertising")
+        self._ble.gap_advertise(interval_us, adv_data=self._payload)
 
-
-def backwards():
-    print("back")
-    right_motor_1.low()
-    right_motor_2.high()
-   
-    left_motor_1.low()
-    left_motor_2.high()
-
-    
-def forwards():
-    print("forward")
-
-    right_motor_1.high()
-    right_motor_2.low()
-    left_motor_1.high()
-    left_motor_2.low()
-
-
-    
-def left():
-    print("left")
-    right_motor_1.high()
-    right_motor_2.low()
-    left_motor_1.low()
-    left_motor_2.low()
-    
-    
-def right():
-    print("right")
-    right_motor_1.low()
-    right_motor_2.low()
-    left_motor_1.high()
-    left_motor_2.low()
-    
-def stop():
-    left_motor_1.low()
-    left_motor_2.low()
-    right_motor_1.low()
-    right_motor_2.low()
-
+    def on_write(self, callback):
+        self._write_callback = callback
 
 
-def action():
-    print("action")
-    left_motor_1.high()
-    left_motor_2.low()
-    right_motor_1.low()
-    right_motor_2.high()
-    #action_pin.low()
-    
+def demo():
+    ble = bluetooth.BLE()
+    p = BLESimplePeripheral(ble)
 
-ssid = 'dlink-CD63'
-password = 'gyhbp38833'
+    def on_rx(v):
+        print("RX", v)
 
-wlan = network.WLAN(network.STA_IF)
-wlan.active(True)
-wlan.connect(ssid, password)
+    p.on_write(on_rx)
 
-html = """<!DOCTYPE html>
-<html>
-    <head> <title>Pico W</title> </head>
-    <body> <h1>Pico W</h1>
-        <p>%s</p>
-    </body>
-</html>
-"""
-led_on = False
-
-max_wait = 10
-while max_wait > 0:
-    if wlan.status() < 0 or wlan.status() >= 3:
-        break
-    max_wait -= 1
-    print('waiting for connection...')
-    time.sleep(1)
+    i = 0
+    while True:
+        if p.is_connected():
+            # Short burst of queued notifications.
+            #for _ in range(3):
+                data = str(i) + "_"
+                #print("TX", data)
+                #p.send(data)
+            #    i += 1
+        time.sleep_ms(100)
 
 
-if wlan.status() != 3:
-    raise RuntimeError('network connection failed')
-else:
-    print('connected')
-    status = wlan.ifconfig()
-    print( 'ip = ' + status[0] )
-
-addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
-
-s = socket.socket()
-s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-s.bind(addr)
-s.listen(1)
-
-print('listening on', addr)
-
-# Listen for connections
-led.on()
-while True:
-    try:
-        if led_on == False:
-            led.on()
-            led_on = True
-        else:
-            led.off()
-            led_on = False
-        cl, addr = s.accept()
-        print('client connected from', addr)
-        request = cl.recv(1024)
-        print(request)
-
-        request = str(request)
-        
-        if "forward" in request:
-            print("forward")
-            forwards()
-        elif "backward" in request:
-            print("backward")
-            backwards()
-        elif "left" in request:
-            print("left")
-            left()
-        elif "right" in request:
-            print("right")
-            right()
-        elif "stop" in request:
-            print("stop")
-            stop()
-        elif "action" in request:
-            print("action")
-            action()
-        else:
-            print("stop")
-            stop()
-
-        print(request)
-
-        response = html #% stateis
-
-        cl.send('HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')
-        cl.send(response)
-        cl.close()
-        
-
-    except OSError as e:
-        cl.close()
-        print('connection closed')
+if __name__ == "__main__":
+    demo()
