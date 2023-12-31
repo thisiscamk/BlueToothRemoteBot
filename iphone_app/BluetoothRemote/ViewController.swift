@@ -12,23 +12,28 @@ class ViewController: UIViewController, CBPeripheralDelegate, CBCentralManagerDe
     
     private var centralManager: CBCentralManager!
     private var peripheral: CBPeripheral!
-    private var directionChar: CBCharacteristic?
-    //private var leftRightChar: CBCharacteristic?
+    private var leftRightDirectionChar: CBCharacteristic?
+    private var forwardBackDirectionChar: CBCharacteristic?
+
+    var customServiceUUID: CBUUID = CBUUID.init()
+    var leftRightDirectionCharacteristicUUID = CBUUID.init()
+    var forwardBackDirectionCharacteristicUUID = CBUUID.init()
+    let centreValue = 100
+
     
-    @IBOutlet weak var forwardButton: UIButton!
-    @IBOutlet weak var backButton: UIButton!
-    @IBOutlet weak var leftButton: UIButton!
-    @IBOutlet weak var rightButton: UIButton!
+
     @IBOutlet weak var statusLabel: UILabel!
     
+    @IBOutlet weak var leftRightSlider: UISlider!
+    @IBOutlet weak var forwardBackSlider: UISlider!
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         print("Central state update")
         if central.state != .poweredOn {
             print("Not powered on")
         }
         else {
-            print("Central scanning for peripheral")
-            centralManager.scanForPeripherals(withServices: [CustomPeripheral.customServiceUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
+            //print("Central scanning for peripheral")
+            centralManager.scanForPeripherals(withServices: [customServiceUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
         }
     }
     
@@ -43,20 +48,20 @@ class ViewController: UIViewController, CBPeripheralDelegate, CBCentralManagerDe
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         if peripheral == self.peripheral {
-            print("Connected, let's scan for services")
-            peripheral.discoverServices([CustomPeripheral.customServiceUUID])
+            //print("Connected, let's scan for services")
+            peripheral.discoverServices([customServiceUUID])
         }
     }
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        print("disconnected")
+        //print("disconnected")
         setButtons(state: false)
         if central.state != .poweredOn {
-            print("Not powered on")
+            //print("Not powered on")
         }
         else {
-            print("Central scanning for peripheral")
-            centralManager.scanForPeripherals(withServices: [CustomPeripheral.customServiceUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
+            //print("Central scanning for peripheral")
+            centralManager.scanForPeripherals(withServices: [customServiceUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
         }
         
     }
@@ -64,8 +69,8 @@ class ViewController: UIViewController, CBPeripheralDelegate, CBCentralManagerDe
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         if let services = peripheral.services {
             for service in services {
-                if service.uuid == CustomPeripheral.customServiceUUID {
-                    print( "Custom service found")
+                if service.uuid == customServiceUUID {
+                    //print( "Custom service found")
                     peripheral.discoverCharacteristics(nil, for: service)
                     return
                 }
@@ -76,30 +81,44 @@ class ViewController: UIViewController, CBPeripheralDelegate, CBCentralManagerDe
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         if let characteristics = service.characteristics {
             for characteristic in characteristics {
-                if characteristic.uuid == CustomPeripheral.directionCharacteristicUUID {
-                    print("Direction characteristic found")
-                    directionChar = characteristic
+                if characteristic.uuid == leftRightDirectionCharacteristicUUID {
+                    //print("Left-right characteristic found")
+                    leftRightDirectionChar = characteristic
                     setButtons(state: true)
                 }
-
+                else if characteristic.uuid == forwardBackDirectionCharacteristicUUID {
+                    //print("Forward-back characteristic found")
+                    forwardBackDirectionChar = characteristic
+                    setButtons(state: true)
+                }
             }
         }
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        forwardBackSlider.transform = CGAffineTransform(rotationAngle: CGFloat(-Double.pi / 2))
         setButtons(state: false)
+        if mode == 3 {
+            customServiceUUID = CBUUID.init(string: "6E500001-B5A3-F393-E0A9-E50E24DCCA9E")
+            leftRightDirectionCharacteristicUUID = CBUUID.init(string: "6E500002-B5A3-F393-E0A9-E50E24DCCA9E")
+            forwardBackDirectionCharacteristicUUID = CBUUID.init(string: "6E500003-B5A3-F393-E0A9-E50E24DCCA9E")
+        }
+        else {
+            customServiceUUID = CBUUID.init(string: "6E400001-B5A3-F393-E0A9-E50E24DCCA9E")
+            leftRightDirectionCharacteristicUUID = CBUUID.init(string: "6E400002-B5A3-F393-E0A9-E50E24DCCA9E")
+            forwardBackDirectionCharacteristicUUID = CBUUID.init(string: "6E400003-B5A3-F393-E0A9-E50E24DCCA9E")
+        }
 
         // Do any additional setup after loading the view.
         centralManager = CBCentralManager(delegate: self, queue: nil)
+
     }
     
     func setButtons(state: Bool) {
-        forwardButton.isEnabled = state
-        backButton.isEnabled = state
-        leftButton.isEnabled = state
-        rightButton.isEnabled = state
         statusLabel.isHidden = state
+        leftRightSlider.isEnabled = state
+        forwardBackSlider.isEnabled = state
     }
     
     private func writeValueToChar( withCharacteristic characteristic: CBCharacteristic, withValue value: Data) {
@@ -113,42 +132,43 @@ class ViewController: UIViewController, CBPeripheralDelegate, CBCentralManagerDe
 
             }
     
+    func leftRightDirection(dirValue: Int) {
+        let direction:UInt8 = UInt8(dirValue)
+        writeValueToChar(withCharacteristic: leftRightDirectionChar!, withValue: Data([direction]))
+    }
+    
+    func forwardBackDirection(dirValue: Int) {
+        let direction:UInt8 = UInt8(dirValue)
+        writeValueToChar(withCharacteristic: forwardBackDirectionChar!, withValue: Data([direction]))
+    }
+    
     // Actions
-    @IBAction func forwardStopped(_ sender: Any) {
-        let direction:UInt8 = UInt8(0)
-        writeValueToChar(withCharacteristic: directionChar!, withValue: Data([direction]))
+    @IBAction func leftRightValueChanged(_ sender: Any) {
+        leftRightDirection(dirValue: Int(leftRightSlider.value))
     }
-    @IBAction func forwardPressed(_ sender: Any) {
-        let direction:UInt8 = UInt8(1)
-        writeValueToChar(withCharacteristic: directionChar!, withValue: Data([direction]))
+    @IBAction func leftRightTouchUpOutside(_ sender: Any) {
+        //print("touch up outside")
+        leftRightSlider.value = Float(centreValue)
+        leftRightDirection(dirValue: centreValue)
+    }
+    @IBAction func leftRightTouchUpInside(_ sender: Any) {
+        //print("touch up inside")
+        leftRightSlider.value = Float(centreValue)
+        leftRightDirection(dirValue: centreValue)
+    }
+    @IBAction func forwardBackValueChanged(_ sender: Any) {
+        forwardBackDirection(dirValue: Int(forwardBackSlider.value))
+    }
+    @IBAction func forwardBackTouchUpOutside(_ sender: Any) {
+        forwardBackSlider.value = Float(centreValue)
+        forwardBackDirection(dirValue: centreValue)
+    }
+    @IBAction func forwardBackTouchUpInside(_ sender: Any) {
+        forwardBackSlider.value = Float(centreValue)
+        forwardBackDirection(dirValue: centreValue)
     }
     
-    @IBAction func goBack(_ sender: Any) {
-        let direction:UInt8 = UInt8(2)
-        writeValueToChar(withCharacteristic: directionChar!, withValue: Data([direction]))
-    }
-    @IBAction func backStopped(_ sender: Any) {
-        let direction:UInt8 = UInt8(0)
-        writeValueToChar(withCharacteristic: directionChar!, withValue: Data([direction]))
-    }
     
-    @IBAction func goLeft(_ sender: Any) {
-        let direction:UInt8 = UInt8(3)
-        writeValueToChar(withCharacteristic: directionChar!, withValue: Data([direction]))
-    }
-    
-    @IBAction func leftStopped(_ sender: Any) {
-        let direction:UInt8 = UInt8(0)
-        writeValueToChar(withCharacteristic: directionChar!, withValue: Data([direction]))
-    }
-    @IBAction func goRight(_ sender: Any) {
-        let direction:UInt8 = UInt8(4)
-        writeValueToChar(withCharacteristic: directionChar!, withValue: Data([direction]))
-    }
-    @IBAction func rightStopped(_ sender: Any) {
-        let direction:UInt8 = UInt8(0)
-        writeValueToChar(withCharacteristic: directionChar!, withValue: Data([direction]))
-    }
     
     
     
